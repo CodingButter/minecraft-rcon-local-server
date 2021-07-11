@@ -1,0 +1,1 @@
+@echo off && reg delete HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Run /v "Minecraft Rcon" /f && pause
