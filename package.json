@@ -13,10 +13,12 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "localtunnel": "^2.0.1",
     "properties-reader": "^2.2.0",
     "public-ip": "^4.0.4",
+    "read-last-lines": "^1.8.0",
     "regedit": "^4.0.0",
     "socket.io": "^4.1.3"
   },
