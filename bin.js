@@ -5,10 +5,10 @@ const path = require("path");
 const cors = require("cors");
 const express = require("express");
 const bodyParser = require("body-parser");
-const { authenticate } = require("./propertiesapi");
+const { authenticate, getSeed, getLevelData } = require("./propertiesapi");
 var status = "not running";
 var tunnel;
-const { startServer, getConsoleData } = require("./startserver");
+const { startServer, getConsoleData, getSeed } = require("./startserver");
 const init = async () => {
   const port = process.argv[2] || 3501;
   const subdomain = await getSubdomain();
@@ -16,6 +16,10 @@ const init = async () => {
   tunnel = await localtunnel({ port, subdomain });
   tunnel.on("close", (resp) => {
     console.log("tunnel closed");
+  });
+  tunnel.on("error", async (error) => {
+    tunnel = await localtunnel({ port, subdomain });
+    console.log(tunnel.url);
   });
   console.log(tunnel.url);
   const app = express();
@@ -39,7 +43,10 @@ const init = async () => {
   app.post("/console", (req, res) => {
     res.json({ data: getConsoleData() });
   });
-
+  app.post("/seed", async (req, res) => {
+    const seed = await getSeed();
+    res.json({ seed });
+  });
   app.listen(port, () => {
     console.log("connect through tunnel");
   });
