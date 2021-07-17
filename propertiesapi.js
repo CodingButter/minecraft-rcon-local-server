@@ -34,10 +34,36 @@ const getLevelData = async () => {
     });
   });
 };
-const getSeed = async () => {};
+const getRconPort = () => {
+  return serverProps.get("rcon.port");
+};
+const getServerPort = () => {
+  return serverProps.get("server-port");
+};
+const getPluginPort = () => {
+  return 3550;
+};
+
+const getPlayerData = async (uuid) => {
+  const levelName = serverProps.get("level-name");
+  return new Promise((resolve, reject) => {
+    var data = fs.readFileSync(
+      path.resolve(`${levelName}/playerdata/${uuid}.dat`)
+    );
+    nbt.parse(data, function (error, data) {
+      if (error) {
+        reject({ error });
+      }
+      resolve(data.value);
+    });
+  });
+};
 
 module.exports = {
   authenticate,
   getLevelData,
-  getSeed,
+  getRconPort,
+  getServerPort,
+  getPluginPort,
+  getPlayerData,
 };

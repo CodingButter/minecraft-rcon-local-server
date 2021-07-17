@@ -1,61 +1,60 @@
-const localtunnel = require("localtunnel");
-const getSubdomain = require("./getsubdomain");
+const createTunnels = require("./TunnelManager");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
 const express = require("express");
+
 const bodyParser = require("body-parser");
-const { authenticate, getSeed, getLevelData } = require("./propertiesapi");
+const {
+  getPluginPort,
+  authenticate,
+  getLevelData,
+  getPlayerData,
+} = require("./propertiesapi");
 var status = "not running";
-var tunnel;
-const { startServer, getConsoleData, getSeed } = require("./startserver");
+var tunnels;
+const { startServer, getConsoleData, getStatus } = require("./startserver");
 const init = async () => {
-  const port = process.argv[2] || 3501;
-  const subdomain = await getSubdomain();
-  console.log(subdomain);
-  tunnel = await localtunnel({ port, subdomain });
-  tunnel.on("close", (resp) => {
-    console.log("tunnel closed");
-  });
-  tunnel.on("error", async (error) => {
-    tunnel = await localtunnel({ port, subdomain });
-    console.log(tunnel.url);
-  });
-  console.log(tunnel.url);
   const app = express();
+  tunnels = await createTunnels();
   app.use(cors());
   app.use(bodyParser.json());
   app.use(authenticate);
   app.post("/start", (req, res) => {
     if (status != "starting" && status != "ready") {
       status = "starting";
-      startServer().then(() => {
-        status = "ready";
-      });
+      startServer()
+        .then(() => {
+          status = "ready";
+        })
+        .catch((err) => {
+          status = "crashed";
+          console.log(err);
+        });
       res.json({ status: "starting" });
     } else {
       res.json({ status: "starting" });
     }
   });
   app.post("/status", (req, res) => {
-    res.json({ status });
+    res.json({ status: getStatus() });
   });
   app.post("/console", (req, res) => {
     res.json({ data: getConsoleData() });
   });
-  app.post("/seed", async (req, res) => {
-    const seed = await getSeed();
-    res.json({ seed });
+  app.post("/playerdata/:uuid", async (req, res) => {
+    const data = await getPlayerData(req.params.uuid);
+    res.json(data);
   });
-  app.listen(port, () => {
-    console.log("connect through tunnel");
+  app.listen(getPluginPort(), () => {
+    console.log("connect through rcon tunnel");
   });
 };
 
 process.stdin.resume(); //so the program will not close instantly
 
 function exitHandler(options, exitCode) {
-  tunnel.close();
+  tunnels && tunnels.close();
   if (options.cleanup) console.log("clean");
   if (exitCode || exitCode === 0) console.log(exitCode);
   if (options.exit) process.exit();
