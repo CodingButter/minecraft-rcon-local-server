@@ -1,10 +1,6 @@
 const localtunnel = require("localtunnel");
 const getSubdomain = require("./getsubdomain");
-const {
-  getServerPort,
-  getRconPort,
-  getPluginPort,
-} = require("./propertiesapi");
+const { getPluginPort } = require("./propertiesapi");
 
 const createTunnel = async (prefix, ipLetters, port) => {
   const subdomain = `${prefix}${ipLetters}`;
@@ -25,14 +21,10 @@ const createTunnel = async (prefix, ipLetters, port) => {
 
 const createTunnels = async () => {
   const ipLetters = await getSubdomain();
-  //console.log(getRconPort(), getServerPort(), getPluginPort());
-  //const rconTunnel = await createTunnel("mcrcon", ipLetters, getRconPort());
-  //const serverTunnel = await createTunnel("server", ipLetters, getServerPort());
+
   const pluginTunnel = await createTunnel("plugin", ipLetters, getPluginPort());
   return {
     close: () => {
-      //rconTunnel.close();
-      //6serverTunnel.close();
       pluginTunnel.close();
     },
   };

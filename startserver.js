@@ -5,6 +5,7 @@ serverBat = path.resolve("Start.bat");
 
 var status = "not running";
 var consoleData = [];
+
 const startServer = async () => {
   console.log("starting servers");
   status = "starting";
